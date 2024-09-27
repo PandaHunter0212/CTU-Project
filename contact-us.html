@@ -1,0 +1,87 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="index.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+<body>
+      <header>
+    <div class="navbar">
+      <div class="topnav" id="myTopnav">
+        <a class="nav-item" href="index.html">Home</a>
+      <a class="nav-item" href="timetable.html">Timetable</a>
+      <a class="nav-item" href="discussion.html">Discussion</a>
+      <a class="nav-item" href="share-resources.html">Share Resources</a>
+      <a class="nav-item" href="contact-us.html">Contact Us</a>
+      <a class="nav-item" href="about-us.html">About Us</a>
+        <a href="javascript:void(0);" class="icon" onclick="myFunction()">
+          <i class="fa fa-bars"></i>
+        </a>
+        <img src="images/CTU-Buddy.png" alt="CTU Buddy" class="header-image">
+      </div>
+    </div>
+  </header>
+
+    <div class="contact-section">
+        <h1>Contact Us</h1>
+        <p>If you want us to contact you, please fill out the form below and we will contact you ASAP.</p>
+    </div>
+
+    <div class="contact-form">
+        <form id="contactForm">
+            <label for="name">Name</label>
+            <input type="text" id="name" name="name" placeholder="Your name.." required>
+
+            <!--Surname, Student Number, and Group Name has been added as requested,-->
+            <label for="Surname">Surname</label>
+            <input type="text" id="Surname" name="Surname" placeholder="Your Surname.." required>
+
+            <label for="Student Number">Student Number</label>
+            <input type="text" id="Student Number" name="Student Number" placeholder="Your Student Number.." required>
+            
+            <label for="Group Name">Group Name</label>
+            <input type="text" id="Group Name" name="Group Name" placeholder="Your Group Name.." required>
+            <!--The fields entered ends here.-->
+
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" placeholder="Your email.." required>
+
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" name="subject" placeholder="Subject.." required>
+
+            <label for="message">Message</label>
+            <textarea id="message" name="message" placeholder="Write something.." style="height:200px" required></textarea>
+
+            <button type="submit">Submit</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>South Africa</h2>
+        <img src="./images/map.png" alt="SA">
+        <h4 class="title">While we proudly boast 12 campuses nationwide, our infrastructure extends far beyond physical boundaries.</h4>
+        <p class="title">The integration of technology in education has revolutionized the learning experience, offering unparalleled flexibility and access. By harnessing the Fourth Industrial Revolution's advancements, educational institutions can transcend traditional barriers, enabling students to engage with course material on a global scale. This approach not only democratizes education but also prepares students for a future where digital literacy is paramount.</p>
+    </div>
+
+    <div class="contact-section">
+    </div>
+    
+    <div id="popup" class="popup">Request has been submitted!</div>
+    <footer>
+    <div class="bottomnav">
+      <a class="nav-item" href="index.html">Home</a>
+      <a class="nav-item" href="timetable.html">Timetable</a>
+      <a class="nav-item" href="discussion.html">Discussion</a>
+      <a class="nav-item" href="share-resources.html">Share Resources</a>
+      <a class="nav-item" href="contact-us.html">Contact Us</a>
+      <a class="nav-item" href="about-us.html">About Us</a>
+    </div>
+    <div class="footer-copyright">
+      <p> Cybercrew &copy;<span> 2024</span> </p>
+    </div>
+  </footer>
+</body>
+</html>
