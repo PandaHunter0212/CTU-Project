@@ -507,6 +507,13 @@ video {
 
 /* ABOUT PAGE STYLES  */
 
+.img-Organogram{
+  width: 65%;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .box-container {
   width: 200px;
   height: 190px;
