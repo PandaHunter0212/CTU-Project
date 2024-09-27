@@ -139,23 +139,63 @@ function myFunction() {
 // CONTACT US JS
 
 document.querySelectorAll('.navbar a').forEach(link => {
-  if (link.href === window.location.href) {
-      link.classList.add('active');
-  }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-  const form = document.getElementById('contactForm');
-  const popup = document.getElementById('popup');
-
-  form.addEventListener('submit', function(event) {
-      event.preventDefault();
-      popup.style.display = 'block';
-      setTimeout(() => {
-          popup.style.display = 'none';
-      }, 3000);
+    if (link.href === window.location.href) {
+        link.classList.add('active');
+    }
   });
-});
+  
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('contactForm');
+    const popup = document.getElementById('popup');
+  
+    // Open IndexedDB
+    const request = indexedDB.open('ContactDB', 1);
+  
+    request.onupgradeneeded = function(event) {
+        const db = event.target.result;
+        const objectStore = db.createObjectStore('contacts', { keyPath: 'id', autoIncrement: true });
+    };
+  
+    request.onsuccess = function(event) {
+        const db = event.target.result;
+  
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+  
+            const formData = {
+                name: form.name.value,
+                surname: form.Surname.value,
+                studentNumber: form['Student Number'].value,
+                groupName: form['Group Name'].value,
+                email: form.email.value,
+                subject: form.subject.value,
+                message: form.message.value
+            };
+  
+            // Save to IndexedDB
+            const transaction = db.transaction(['contacts'], 'readwrite');
+            const objectStore = transaction.objectStore('contacts');
+            objectStore.add(formData);
+  
+            transaction.oncomplete = function() {
+                popup.style.display = 'block';
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                }, 3000);
+                form.reset(); // Clear the form after submission
+            };
+  
+            transaction.onerror = function(event) {
+                console.error("Error saving data to IndexedDB:", event.target.error);
+            };
+        });
+    };
+  
+    request.onerror = function(event) {
+        console.error("Error opening IndexedDB:", event.target.error);
+    };
+  });
+  
 
 // ABOUT US JS
 
@@ -370,3 +410,20 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 });
+
+// TIMETABLE JS
+function toggleAccordion(event) {
+    const header = event.currentTarget;
+    const content = header.nextElementSibling;
+
+    // Toggle active class on content
+    content.classList.toggle('active');
+
+    // Close other accordions
+    const allContents = document.querySelectorAll('.accordion-content');
+    allContents.forEach(item => {
+        if (item !== content) {
+            item.classList.remove('active');
+        }
+    });
+}
