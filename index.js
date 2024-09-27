@@ -1,0 +1,350 @@
+// SHARED RESOURCES JS
+
+let resources = [];
+
+function uploadResource() {
+    const title = document.getElementById('resourceTitle').value;
+    const category = document.getElementById('resourceCategory').value;
+    const fileInput = document.getElementById('resourceFile');
+    const file = fileInput.files[0];
+
+    if (!title || !category || !file) {
+        alert("Please fill in all fields and select a file.");
+        return;
+    }
+
+    const resource = {
+        title: title,
+        category: category,
+        fileName: file.name
+    };
+
+    resources.push(resource);
+    displayResources();
+    clearUploadForm();
+
+    // Offline access - save the file to the user's browser storage
+    if (typeof(Storage) !== "undefined") {
+        localStorage.setItem(file.name, URL.createObjectURL(file));
+    } else {
+        alert("Sorry, your browser does not support offline access.");
+    }
+}
+
+function clearUploadForm() {
+    document.getElementById('resourceTitle').value = '';
+    document.getElementById('resourceCategory').value = '';
+    document.getElementById('resourceFile').value = '';
+}
+
+function displayResources() {
+    const resourceList = document.getElementById('resourceList');
+    resourceList.innerHTML = '';
+
+    resources.forEach(resource => {
+        const listItem = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = '#';
+        link.innerText = `${resource.title} (${resource.category})`;
+        link.onclick = function () {
+            downloadResource(resource.fileName);
+        };
+        listItem.appendChild(link);
+        resourceList.appendChild(listItem);
+    });
+}
+
+function advancedSearchResources() {
+    const query = document.getElementById('searchInput').value.toLowerCase();
+    const selectedCategory = document.querySelector('input[name="categoryFilter"]:checked').value;
+
+    const filteredResources = resources.filter(resource => {
+        let matchesQuery = resource.title.toLowerCase().includes(query) || resource.category.toLowerCase().includes(query);
+        let matchesCategory = !selectedCategory || resource.category === selectedCategory;
+        return matchesQuery && matchesCategory;
+    });
+
+    displayFilteredResources(filteredResources);
+}
+
+function displayFilteredResources(filteredResources) {
+    const resourceList = document.getElementById('resourceList');
+    resourceList.innerHTML = '';
+
+    filteredResources.forEach(resource => {
+        const listItem = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = '#';
+        link.innerText = `${resource.title} (${resource.category})`;
+        link.onclick = function () {
+            downloadResource(resource.fileName);
+        };
+        listItem.appendChild(link);
+        resourceList.appendChild(listItem);
+    });
+}
+
+function downloadResource(fileName) {
+    const fileUrl = localStorage.getItem(fileName);
+    if (fileUrl) {
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } else {
+        alert("Resource not available offline. Please connect to the internet to download.");
+    }
+}
+
+// NAV JS
+
+document.querySelectorAll('.navbar a').forEach(link => {
+  if (link.href === window.location.href) {
+      link.classList.add('active');
+  }
+});
+function myFunction() {
+  var x = document.getElementById("myTopnav");
+  if (x.className === "topnav") {
+    x.className += " responsive";
+  } else {
+    x.className = "topnav";
+  }
+}
+
+// CONTACT US JS
+
+document.querySelectorAll('.navbar a').forEach(link => {
+  if (link.href === window.location.href) {
+      link.classList.add('active');
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.getElementById('contactForm');
+  const popup = document.getElementById('popup');
+
+  form.addEventListener('submit', function(event) {
+      event.preventDefault();
+      popup.style.display = 'block';
+      setTimeout(() => {
+          popup.style.display = 'none';
+      }, 3000);
+  });
+});
+
+// ABOUT US JS
+
+function openModal(modalId) {
+  document.getElementById(modalId).style.display = "block";
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).style.display = "none";
+}
+
+// DISCUSSION JS
+
+document.addEventListener('DOMContentLoaded', () => {
+    const discussionForm = document.getElementById('discussionForm');
+    const uploadHistory = document.getElementById('uploadHistory');
+
+    let db;
+
+    // Open (or create) the database
+    const request = indexedDB.open('discussionDB', 1);
+
+    request.onupgradeneeded = (event) => {
+        db = event.target.result;
+        db.createObjectStore('posts', { keyPath: 'id' });
+    };
+
+    request.onsuccess = (event) => {
+        db = event.target.result;
+        loadPosts(); // Load posts after successful database open
+    };
+
+    request.onerror = (event) => {
+        console.error('Database error:', event.target.errorCode);
+    };
+
+    // Load posts from IndexedDB
+    function loadPosts() {
+        const transaction = db.transaction(['posts'], 'readonly');
+        const objectStore = transaction.objectStore('posts');
+        const request = objectStore.getAll();
+
+        request.onsuccess = (event) => {
+            event.target.result.forEach(post => displayPost(post));
+        };
+    }
+
+    // Display post in the discussion list
+    function displayPost(post) {
+        const listItem = document.createElement('li');
+        listItem.id = post.id;
+        listItem.innerHTML = `
+            <strong>Username:</strong> ${post.username}<br>
+            <strong>Title:</strong> ${post.title}<br>
+            <p>${post.message}</p>
+            <button class="delete-post-button">Delete Post</button>
+            <button class="reply-button">Reply</button>
+            <button class="report-button" data-username="${post.username}" data-message="${post.message}" data-id="${post.id}" data-type="post">Report</button>
+            <ul class="replies" style="display: none;"></ul>
+        `;
+
+        uploadHistory.appendChild(listItem);
+        const replyList = listItem.querySelector('.replies');
+
+        // Only create toggle button if there are replies
+        if (post.replies && post.replies.length > 0) {
+            post.replies.forEach(reply => displayReply(reply, listItem));
+            const toggleRepliesButton = createToggleRepliesButton(listItem);
+            listItem.appendChild(toggleRepliesButton);
+        }
+
+        const replyButton = listItem.querySelector('.reply-button');
+        replyButton.addEventListener('click', () => showReplyForm(listItem, post.id));
+        
+        const deletePostButton = listItem.querySelector('.delete-post-button');
+        deletePostButton.addEventListener('click', () => deletePost(post.id, listItem));
+    }
+
+    // Create toggle button for replies
+    function createToggleRepliesButton(listItem) {
+        const toggleButton = document.createElement('button');
+        toggleButton.classList.add('toggle-replies-button');
+        toggleButton.textContent = 'Show Replies';
+        toggleButton.addEventListener('click', () => {
+            const replyList = listItem.querySelector('.replies');
+            if (replyList.style.display === 'none' || replyList.style.display === '') {
+                replyList.style.display = 'block';
+                toggleButton.textContent = 'Hide Replies';
+            } else {
+                replyList.style.display = 'none';
+                toggleButton.textContent = 'Show Replies';
+            }
+        });
+        return toggleButton;
+    }
+
+    // Show reply form for posts and replies
+    function showReplyForm(listItem, postId) {
+        const replyForm = document.createElement('form');
+        replyForm.classList.add('reply-form');
+        replyForm.innerHTML = `
+            <label for="replyUsername">Username:</label>
+            <input type="text" id="replyUsername" name="replyUsername" placeholder="Your username" required>
+            <label for="replyMessage">Reply:</label>
+            <textarea id="replyMessage" name="replyMessage" placeholder="Write your reply.." required></textarea>
+            <button type="submit">Post Reply</button>
+        `;
+        listItem.appendChild(replyForm);
+
+        replyForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const replyUsername = replyForm.querySelector('#replyUsername').value;
+            const replyMessage = replyForm.querySelector('#replyMessage').value;
+
+            const replyId = `reply-${Date.now()}`;
+            const reply = { id: replyId, username: replyUsername, message: replyMessage };
+
+            addReplyToPost(postId, reply);
+            displayReply(reply, listItem);
+            replyForm.remove();
+        });
+    }
+
+    // Posting new discussion
+    discussionForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const username = document.getElementById('username').value;
+        const title = document.getElementById('title').value;
+        const message = document.getElementById('message').value;
+
+        const postId = `post-${Date.now()}`;
+        const newPost = { id: postId, username, title, message, replies: [] };
+        savePost(newPost);
+        displayPost(newPost);
+        discussionForm.reset();
+    });
+
+    // Save post to IndexedDB
+    function savePost(post) {
+        const transaction = db.transaction(['posts'], 'readwrite');
+        const objectStore = transaction.objectStore('posts');
+        const request = objectStore.add(post);
+        request.onsuccess = () => {
+            console.log('Post saved to database:', post);
+        };
+        request.onerror = () => {
+            console.error('Error saving post:', request.error);
+        };
+    }
+
+    // Save reply to the post in IndexedDB
+    function addReplyToPost(postId, reply) {
+        const transaction = db.transaction(['posts'], 'readwrite');
+        const objectStore = transaction.objectStore('posts');
+
+        const request = objectStore.get(postId);
+        request.onsuccess = (event) => {
+            const post = event.target.result;
+            if (!post.replies) {
+                post.replies = [];
+            }
+            post.replies.push(reply);
+            objectStore.put(post);
+        };
+    }
+
+    // Display the reply
+    function displayReply(reply, listItem) {
+        const replyList = listItem.querySelector('.replies');
+        const replyItem = document.createElement('li');
+        replyItem.id = reply.id;
+        replyItem.innerHTML = `
+            <strong>Username:</strong> ${reply.username}<br>
+            <p>${reply.message}</p>
+            <button class="delete-reply-button">Delete Reply</button>
+        `;
+        replyList.appendChild(replyItem);
+        replyList.style.display = 'block';
+
+        // Delete reply handling
+        const deleteReplyButton = replyItem.querySelector('.delete-reply-button');
+        deleteReplyButton.addEventListener('click', () => deleteReply(replyItem, reply.id, listItem));
+    }
+
+    // Delete post
+    function deletePost(postId, listItem) {
+        const transaction = db.transaction(['posts'], 'readwrite');
+        const objectStore = transaction.objectStore('posts');
+        const request = objectStore.delete(postId);
+        request.onsuccess = () => {
+            uploadHistory.removeChild(listItem);
+            console.log('Post deleted:', postId);
+        };
+        request.onerror = () => {
+            console.error('Error deleting post:', request.error);
+        };
+    }
+
+    // Delete reply
+    function deleteReply(replyItem, replyId, listItem) {
+        const transaction = db.transaction(['posts'], 'readwrite');
+        const objectStore = transaction.objectStore('posts');
+
+        const request = objectStore.get(listItem.id);
+        request.onsuccess = (event) => {
+            const post = event.target.result;
+            post.replies = post.replies.filter(reply => reply.id !== replyId);
+            objectStore.put(post); // Update the post after deleting the reply
+
+            replyItem.remove(); // Remove reply from the DOM
+            console.log('Reply deleted:', replyId);
+        };
+    }
+});
